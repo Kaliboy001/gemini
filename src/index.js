@@ -1,11 +1,28 @@
-// src/index.js
+// src/index.js (This is the code for your Cloudflare Worker: https://gemini.mr-shokrullah.workers.dev/)
 export default {
   async fetch(request) {
     const url = new URL(request.url);
     const message = url.searchParams.get("q");
 
+    // --- START: CORS Handling Additions ---
+    // Handle pre-flight OPTIONS requests (browsers send this before actual GET/POST)
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        status: 204, // No content for pre-flight
+        headers: {
+          'Access-Control-Allow-Origin': '*', // Allows requests from any origin.
+                                            // For production, consider replacing '*' with your specific Pages domain (e.g., 'https://your-chatbot-pages-domain.pages.dev')
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', // Methods allowed
+          'Access-Control-Allow-Headers': 'Content-Type', // Headers allowed
+          'Access-Control-Max-Age': '86400', // Cache preflight response for 24 hours
+        },
+      });
+    }
+    // --- END: CORS Handling Additions ---
+
+
     if (!message) {
-      return new Response(JSON.stringify({
+      const errorResponse = new Response(JSON.stringify({
         error: "Missing query parameter 'q'",
         status: 400,
         successful: "failed"
@@ -13,6 +30,10 @@ export default {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
+      // --- START: CORS Header for Error Responses ---
+      errorResponse.headers.set('Access-Control-Allow-Origin', '*');
+      // --- END: CORS Header for Error Responses ---
+      return errorResponse;
     }
 
     const timestamp = Date.now();
@@ -30,7 +51,7 @@ export default {
       "Content-Type": "application/json",
       "Accept": "application/json, text/plain, */*",
       "Referer": "https://www.google.com/",
-      "Origin": "https://api.ashlynn-repo.tech/",
+      "Origin": "https://alynn-repo.tech/", // This 'Origin' header is for the upstream API, not for your browser's access.
       "Connection": "keep-alive",
     };
 
@@ -51,7 +72,7 @@ export default {
         ashlynn = textResponse;
       }
 
-      return new Response(JSON.stringify({
+      const successResponse = new Response(JSON.stringify({
         "Join": "https://t.me/Ashlynn_Repository",
         "response": ashlynn,
         "status": 200,
@@ -60,17 +81,26 @@ export default {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
+      // --- START: CORS Header for Success Responses ---
+      successResponse.headers.set('Access-Control-Allow-Origin', '*');
+      // --- END: CORS Header for Success Responses ---
+      return successResponse;
 
     } catch (error) {
-      return new Response(JSON.stringify({
+      console.error("[Worker Fetch Error]", error.message);
+      const errorResponse = new Response(JSON.stringify({
         "Join": "https://t.me/Ashlynn_Repository",
-        "response": error.message,
+        "response": `Worker failed to fetch from upstream API: ${error.message}`,
         "status": 500,
         "successful": "failed"
       }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       });
+      // --- START: CORS Header for Error Responses ---
+      errorResponse.headers.set('Access-Control-Allow-Origin', '*');
+      // --- END: CORS Header for Error Responses ---
+      return errorResponse;
     }
   },
 };
@@ -87,9 +117,9 @@ async function generateSHA256(input) {
 function getUserAgent() {
   const userAgents = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36",
     "Mozilla/5.0 (Linux; Android 12; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
     "Mozilla/5.0 (iPhone; CPU iPhone OS 17_3 like Mac OS X) AppleWebKit/537.36 (KHTML, like Gecko) Version/17.3 Mobile/15E148 Safari/537.36",
   ];
   return userAgents[Math.floor(Math.random() * userAgents.length)];
-}
+        }
