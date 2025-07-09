@@ -1,13 +1,14 @@
+// src/index.js
 export default {
   async fetch(request) {
     const url = new URL(request.url);
     const message = url.searchParams.get("q");
 
     if (!message) {
-      return new Response(JSON.stringify({ 
-        error: "Missing query parameter 'q'", 
-        status: 400, 
-        successful: "failed" 
+      return new Response(JSON.stringify({
+        error: "Missing query parameter 'q'",
+        status: 400,
+        successful: "failed"
       }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
@@ -47,7 +48,7 @@ export default {
         const jsonResponse = JSON.parse(textResponse);
         ashlynn = jsonResponse?.choices?.[0]?.message || textResponse;
       } catch (error) {
-        ashlynn = textResponse; 
+        ashlynn = textResponse;
       }
 
       return new Response(JSON.stringify({
@@ -61,7 +62,7 @@ export default {
       });
 
     } catch (error) {
-      return new Response(JSON.stringify({ 
+      return new Response(JSON.stringify({
         "Join": "https://t.me/Ashlynn_Repository",
         "response": error.message,
         "status": 500,
