@@ -1,3 +1,3 @@
 name = "gemini" # This should match the "Project name" you'll enter in Cloudflare
 main = "src/index.js"          # Path to your worker's main JavaScript file
-compatibility_date = "2024-01-01" # Keep this date as is or update to a very recent one (e.g., "2024-07-01")
+compatibility_date = "2025-06-09" # Keep this date as is or update to a very recent one (e.g., "2024-07-01")
